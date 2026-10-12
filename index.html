@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="簡潔的個人工作空間，整理每日任務與目標。">
+  <title>日常 · 我的工作空間</title>
+  <link rel="stylesheet" href="site.css">
+  <script defer src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div id="load-error" class="load-error" hidden>無法載入 Vue，請確認網路連線後重新整理。</div>
+  <div id="app" v-cloak>
+    <header class="header"><a class="brand" href="./"><span class="brand-icon">日</span>日常<span class="brand-sub">我的工作空間</span></a><span class="date">{{ today }}</span></header>
+    <main>
+      <section class="intro"><span class="eyebrow">讓每一天，都更有方向</span><h1>從一件小事開始。</h1><p>整理想法、記下任務，留一點空間給重要的事。</p></section>
+      <section class="stats" aria-label="任務統計"><article><span>所有任務</span><strong>{{ tasks.length.toString().padStart(2, '0') }}</strong></article><article><span>已完成</span><strong>{{ completed.toString().padStart(2, '0') }}</strong></article><article class="progress-card"><span>今日進度</span><strong>{{ progress }}<small>%</small></strong><div class="progress" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" aria-label="任務完成比例"><div :style="{ width: progress + '%' }"></div></div></article></section>
+      <div class="workspace">
+        <section class="panel tasks"><div class="panel-heading"><div><h2>我的待辦事項</h2><p>一步一步，完成今天的計畫。</p></div><span class="pill">{{ tasks.length - completed }} 件待完成</span></div>
+          <form @submit.prevent="addTask" class="add-form"><label class="sr-only" for="new-task">新增任務</label><input id="new-task" v-model="newTask" maxlength="120" placeholder="接下來，想完成什麼？" required><button type="submit">＋ 新增</button></form>
+          <div class="filters" aria-label="篩選任務"><button v-for="item in filters" :key="item.value" @click="filter = item.value" :class="{ active: filter === item.value }" :aria-pressed="filter === item.value">{{ item.label }}</button></div>
+          <ul class="task-list"><li v-for="task in visibleTasks" :key="task.id"><label :class="{ done: task.done }"><input type="checkbox" v-model="task.done"><span>{{ task.text }}</span></label><button class="delete" @click="deleteTask(task.id)" :aria-label="'刪除任務：' + task.text">×</button></li></ul>
+          <p v-if="visibleTasks.length === 0" class="empty">{{ filter === 'done' ? '完成第一件任務，就會出現在這裡。' : '目前沒有任務，給自己一個新的小目標吧。' }}</p>
+          <p class="storage-note" role="status">{{ storageMessage }}</p>
+        </section>
+        <aside><section class="note-card"><span class="eyebrow">給今天的你</span><h2>不用一次做到完美，<br>只要持續往前。</h2><p>把大目標拆成小步驟，<br>每一次完成，都值得肯定。</p><div class="note-art" aria-hidden="true"><span></span><span></span><span></span></div></section>
+          <section class="panel connection"><h2>{{ staticMode ? '儲存方式' : '服務連線' }}</h2><p role="status"><span class="status-dot" :class="{ connected: apiConnected || staticMode }"></span>{{ apiMessage }}</p><p v-if="staticMode">任務只存在此瀏覽器，電腦與手機分別儲存。</p><p v-if="serverTime" class="server-time">伺服器時間：{{ serverTime }}</p><button v-if="!staticMode" class="text-button" @click="checkApi" :disabled="apiLoading">{{ apiLoading ? '連線中…' : '重新檢查連線 ↗' }}</button></section>
+        </aside>
+      </div>
+    </main><footer>日常 · 把心力留給重要的事<span>你的任務儲存在此瀏覽器</span></footer>
+  </div>
+  <noscript><p>請啟用 JavaScript 以使用此網頁。</p></noscript>
+</body>
+</html>
