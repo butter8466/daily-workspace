@@ -1,36 +1,16 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="簡潔的個人工作空間，整理每日任務與目標。">
-  <title>日常 · 我的工作空間</title>
-  <link rel="stylesheet" href="site.css">
-  <script defer src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
-  <script defer src="config.js"></script>
-  <script defer src="app.js"></script>
-</head>
-<body>
-  <div id="load-error" class="load-error" hidden>無法載入 Vue，請確認網路連線後重新整理。</div>
-  <div id="app" v-cloak>
-    <header class="header"><a class="brand" href="./"><span class="brand-icon">日</span>日常<span class="brand-sub">我的工作空間</span></a><span class="date">{{ today }}</span></header>
-    <main>
-      <section class="intro"><span class="eyebrow">讓每一天，都更有方向</span><h1>從一件小事開始。</h1><p>整理想法、記下任務，留一點空間給重要的事。</p></section>
-      <section class="stats" aria-label="任務統計"><article><span>所有任務</span><strong>{{ tasks.length.toString().padStart(2, '0') }}</strong></article><article><span>已完成</span><strong>{{ completed.toString().padStart(2, '0') }}</strong></article><article class="progress-card"><span>今日進度</span><strong>{{ progress }}<small>%</small></strong><div class="progress" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" aria-label="任務完成比例"><div :style="{ width: progress + '%' }"></div></div></article></section>
-      <div class="workspace">
-        <section class="panel tasks"><div class="panel-heading"><div><h2>我的待辦事項</h2><p>一步一步，完成今天的計畫。</p></div><span class="pill">{{ tasks.length - completed }} 件待完成</span></div>
-          <form @submit.prevent="addTask" class="add-form"><label class="sr-only" for="new-task">新增任務</label><input id="new-task" v-model="newTask" maxlength="120" placeholder="接下來，想完成什麼？" required><button type="submit">＋ 新增</button></form>
-          <div class="filters" aria-label="篩選任務"><button v-for="item in filters" :key="item.value" @click="filter = item.value" :class="{ active: filter === item.value }" :aria-pressed="filter === item.value">{{ item.label }}</button></div>
-          <ul class="task-list"><li v-for="task in visibleTasks" :key="task.id"><label :class="{ done: task.done }"><input type="checkbox" v-model="task.done"><span>{{ task.text }}</span></label><button class="delete" @click="deleteTask(task.id)" :aria-label="'刪除任務：' + task.text">×</button></li></ul>
-          <p v-if="visibleTasks.length === 0" class="empty">{{ filter === 'done' ? '完成第一件任務，就會出現在這裡。' : '目前沒有任務，給自己一個新的小目標吧。' }}</p>
-          <p class="storage-note" role="status">{{ storageMessage }}</p>
-        </section>
-        <aside><section class="note-card"><span class="eyebrow">給今天的你</span><h2>不用一次做到完美，<br>只要持續往前。</h2><p>把大目標拆成小步驟，<br>每一次完成，都值得肯定。</p><div class="note-art" aria-hidden="true"><span></span><span></span><span></span></div></section>
-          <section class="panel connection"><h2>{{ staticMode ? '儲存方式' : '服務連線' }}</h2><p role="status"><span class="status-dot" :class="{ connected: apiConnected || staticMode }"></span>{{ apiMessage }}</p><p v-if="staticMode">任務只存在此瀏覽器，電腦與手機分別儲存。</p><p v-if="serverTime" class="server-time">伺服器時間：{{ serverTime }}</p><button v-if="!staticMode" class="text-button" @click="checkApi" :disabled="apiLoading">{{ apiLoading ? '連線中…' : '重新檢查連線 ↗' }}</button></section>
-        </aside>
-      </div>
-    </main><footer>日常 · 把心力留給重要的事<span>你的任務儲存在此瀏覽器</span></footer>
-  </div>
-  <noscript><p>請啟用 JavaScript 以使用此網頁。</p></noscript>
-</body>
-</html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="台股自選股、官方參考資料與個人研究筆記。"><title>股研室 · 台股研究工作台</title><link rel="stylesheet" href="site.css"><script defer src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script><script defer src="config.js"></script><script defer src="app.js"></script></head>
+<body><div id="load-error" hidden>無法載入 Vue，請確認網路後重新整理。</div><div id="app" v-cloak>
+<header><a class="brand" href="./"><span class="brand-mark">研</span>股研室 <small>TAIWAN EQUITY RESEARCH</small></a><div class="header-actions"><button class="quiet" @click="exportData">匯出備份</button><label class="import-button">匯入備份<input type="file" accept="application/json,.json" @change="importData"></label></div></header>
+<main><section class="hero"><div><div class="eyebrow">台股研究工作台</div><h1>先理解，再做決定。</h1><p>把自選股、資料來源與研究想法，整理在同一個地方。</p></div><span class="date">{{ today }}</span></section>
+<div class="notice" role="status" v-if="message">{{ message }}</div>
+<section class="summary" aria-label="研究概況"><article><span>自選股</span><strong>{{ stocks.length }}<small>檔</small></strong></article><article><span>研究中</span><strong>{{ researching }}<small>檔</small></strong></article><article><span>參考連結</span><strong>{{ linkCount }}<small>筆</small></strong></article><div class="summary-note"><span class="dot"></span><div>個人研究資料庫<small>資料存於此瀏覽器 · 可匯出備份</small></div></div></section>
+<div class="workspace"><aside class="watchlist panel"><div class="section-heading"><h2>我的自選股</h2><span>{{ filtered.length }} 檔</span></div><label class="sr-only" for="search">搜尋代號或名稱</label><input id="search" class="search" v-model="search" placeholder="搜尋代號或名稱"><div class="filters"><button v-for="s in ['全部', ...statuses]" :key="s" @click="filter=s" :class="{ active:filter===s }">{{ s }}</button></div>
+<div class="stock-list"><button v-for="s in filtered" :key="s.id" class="stock-row" :class="{ selected: selectedId===s.id }" @click="selectedId=s.id"><div><strong>{{ s.code }}</strong><span>{{ s.name }}</span><small>{{ s.market }}</small></div><span class="status-tag" :class="{ studying:s.status==='研究中' }">{{ s.status }}</span></button><p class="empty" v-if="!filtered.length">{{ stocks.length ? '沒有符合條件的自選股。' : '尚未新增自選股。從你想了解的公司開始。' }}</p></div>
+<details class="add-stock" :open="!stocks.length"><summary>＋ 新增自選股</summary><form @submit.prevent="addStock"><div class="two-fields"><label>證券代號<input v-model="draft.code" maxlength="6" placeholder="例如 2330" required pattern="[0-9A-Za-z]{4,6}"></label><label>市場<select v-model="draft.market"><option v-for="m in markets">{{ m }}</option></select></label></div><label>證券名稱<input v-model="draft.name" maxlength="40" placeholder="請輸入名稱" required></label><button class="primary" type="submit">加入自選股</button></form></details></aside>
+<section class="research" v-if="selected"><div class="stock-heading"><div><div class="eyebrow">{{ selected.market }} · {{ selected.code }}</div><h2>{{ selected.name }}</h2><p>上次編輯：{{ formatDate(selected.updatedAt) }}</p></div><label class="status-select">研究狀態<select v-model="selected.status" @change="touch"><option v-for="s in statuses">{{ s }}</option></select></label></div>
+<div class="panel notes"><div class="section-heading"><h3>研究筆記</h3><span>編輯後自動儲存</span></div><label>關注原因<textarea v-model="selected.thesis" @input="touch" maxlength="12000" placeholder="為什麼關注這家公司？你想驗證什麼假設？"></textarea></label><div class="two-fields"><label>風險與疑問<textarea v-model="selected.risks" @input="touch" maxlength="12000" placeholder="競爭、財務、產業週期，有哪些待確認的問題？"></textarea></label><label>下一步查證<textarea v-model="selected.next" @input="touch" maxlength="12000" placeholder="下一次要查哪份財報、月營收或法說會資料？"></textarea></label></div><div class="note-footer"><span role="status">{{ saveStatus }}</span><button class="danger quiet" @click="removeStock">移除這檔自選股</button></div></div>
+<section class="panel references"><div class="section-heading"><h3>這檔股票的參考連結</h3><span>{{ selected.links.length }} 筆</span></div><ul><li v-for="link in selected.links" :key="link.id"><a :href="link.url" target="_blank" rel="noopener noreferrer"><strong>{{ link.title }} ↗</strong><small>{{ hostname(link.url) }}</small></a><button class="quiet" @click="removeLink(link.id)" :aria-label="'移除連結：'+link.title">×</button></li></ul><p class="empty" v-if="!selected.links.length">把財報、法說會、公司官網或閱讀文章收在這裡。</p><form class="link-form" @submit.prevent="addLink"><label>連結標題<input v-model="linkDraft.title" maxlength="100" placeholder="例如：公司投資人關係" required></label><label>網址<input v-model="linkDraft.url" type="url" maxlength="2000" placeholder="https://…" required></label><button class="primary" type="submit">新增連結</button></form></section></section>
+<section class="welcome panel" v-else><div class="welcome-icon">↗</div><div class="eyebrow">建立你的研究清單</div><h2>每一筆想法，都有跡可循。</h2><p>先加入一檔自選股，再記下關注原因、風險與待查證的資料。</p><ol><li>輸入證券代號與名稱</li><li>整理研究筆記與參考連結</li><li>定期回顧，匯出資料備份</li></ol><span class="caption">代號與名稱由你輸入，加入前請至官方資料核對。</span></section></div>
+<section class="official"><div class="section-heading"><div><div class="eyebrow">從原始資料開始</div><h2>官方資料入口</h2></div><span>開啟後以證券代號查詢</span></div><div class="resource-grid"><a v-for="r in resources" :href="r.url" target="_blank" rel="noopener noreferrer"><span>{{ r.tag }}</span><h3>{{ r.title }} ↗</h3><p>{{ r.description }}</p><small>{{ hostname(r.url) }}</small></a></div></section>
+<footer><span>股研室 · 個人研究整理工具，無即時報價或買賣建議。</span><span>不同裝置資料不會自動同步</span></footer></main></div><noscript>請啟用 JavaScript 以使用此網頁。</noscript></body></html>
