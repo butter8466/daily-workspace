@@ -11,7 +11,7 @@ else {
       { tag:'MOPS', title:'公開資訊觀測站', description:'公司財務報表、月營收、重大訊息與股利公告。', url:'https://mops.twse.com.tw/' },
       { tag:'TPEX', title:'證券櫃檯買賣中心', description:'上櫃與興櫃市場資訊、交易統計及相關公告。', url:'https://www.tpex.org.tw/zh-tw/index.html' }
     ];
-    const message = ref(''); const saveStatus = ref('資料僅儲存在此瀏覽器。');
+    const pendingRemoval = ref(null); const message = ref(''); const saveStatus = ref('資料僅儲存在此瀏覽器。');
     function validUrl(value) {
       try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password; }
       catch (_) { return false; }
@@ -62,8 +62,11 @@ else {
     }
     function touch() { if (selected.value) selected.value.updatedAt = new Date().toISOString(); }
     function removeStock() {
-      if (!selected.value || !window.confirm('移除 ' + selected.value.code + ' ' + selected.value.name + ' 與這檔股票的筆記和連結？請先匯出備份。')) return;
-      stocks.value = stocks.value.filter(s => s.id !== selectedId.value); selectedId.value = stocks.value[0]?.id || ''; message.value = '已移除自選股。';
+      if (selected.value) pendingRemoval.value = selected.value;
+    }
+    function confirmRemoval() {
+      if (!pendingRemoval.value) return;
+      stocks.value = stocks.value.filter(s => s.id !== pendingRemoval.value.id); selectedId.value = stocks.value[0]?.id || ''; pendingRemoval.value = null; message.value = '已移除自選股。';
     }
     function addLink() {
       if (!selected.value) return;
@@ -98,6 +101,6 @@ else {
     const today = new Intl.DateTimeFormat('zh-TW', { month:'long', day:'numeric', weekday:'long' }).format(new Date());
     const hostname = url => { try { return new URL(url).hostname; } catch (_) { return ''; } };
     const formatDate = value => new Date(value).toLocaleString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
-    return { markets, statuses, resources, message, saveStatus, stocks, selectedId, selected, search, filter, filtered, researching, linkCount, draft, linkDraft, addStock, touch, removeStock, addLink, removeLink, exportData, importData, today, hostname, formatDate };
+    return { pendingRemoval, confirmRemoval, markets, statuses, resources, message, saveStatus, stocks, selectedId, selected, search, filter, filtered, researching, linkCount, draft, linkDraft, addStock, touch, removeStock, addLink, removeLink, exportData, importData, today, hostname, formatDate };
   }}).mount('#app');
 }
